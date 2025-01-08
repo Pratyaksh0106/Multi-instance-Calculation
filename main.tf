@@ -30,7 +30,7 @@ resource "aws_instance" "instance1" {
   #                     'multiplication': multiply_result,
   #                     'division': divide_result
   #                 }
-  #                 response = requests.post(SAVE_URL, json=payload)
+  #                 response = requests.post(SAVE_URL, json=payload)  
   #                 print(response.json())
 
   #             def main():
