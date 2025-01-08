@@ -1,4 +1,4 @@
-name: Terraform CI/CD with Docker
+name: Terraform CI/CD Pipeline
 
 on:
   push:
@@ -12,26 +12,26 @@ on:
 jobs:
   terraform:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Build Docker Image
-        run: |
-          docker build -t terraform-docker .
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
-      - name: Run Terraform Commands
+      - name: Configure AWS Credentials
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
+          echo "AWS credentials configured"
+
+      - name: Build and run Terraform using Docker
+        run: |
           docker run --rm \
-          -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
-          -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
-          -v $(pwd):/workspace \
-          terraform-docker sh -c "
-            terraform init && \
-            terraform plan -out=tfplan && \
-            terraform apply -auto-approve tfplan
-          "
+            -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
+            -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+            -v $(pwd):/workspace \
+            terraform-docker terraform init && terraform plan -out=tfplan && terraform apply -auto-approve tfplan
